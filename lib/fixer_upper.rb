@@ -14,7 +14,7 @@ module Fixer #:nodoc:
         exclude_gets = options.key?(:exclude_gets) ? options[:exclude_gets] : []
         exclude_sets = options.key?(:exclude_sets) ? options[:exclude_sets] : []
 
-        do_the_dew(exclude_both, exclude_gets, exclude_sets)
+        create_props(exclude_both, exclude_gets, exclude_sets)
       end
     end
 
@@ -28,7 +28,7 @@ module Fixer #:nodoc:
         define_method("#{name}=".to_sym) { |value| self.send("#{orig_name}=".to_sym, value) }
       end
 
-      def do_the_dew(exclude_both, exclude_gets, exclude_sets)
+      def create_props(exclude_both, exclude_gets, exclude_sets)
         self.column_names.each do |column|
           new_prop = column.underscore
           if !(new_prop == column) and !(exclude_both.include?(column))
