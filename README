@@ -1,0 +1,109 @@
+FixerUpper
+===================
+
+facts.
+-Weird DB coloumn names suck.
+-Ruby's string method "".underscore is awesome.
+
+Why not fix one problem with a gift from Ruby? FixerUpper is a love child that hopes to
+solve this problem.
+
+Q: What does is do?
+A: Takes your db columns and creates friendly gets and sets that are more like normal
+ruby naming conventions. But since I'm nice, I also added the ability to override specific fields
+so it doesn't create methods you have no need for. Why don't we check out two examples.
+
+Examples
+========
+
+Lets start with a table Foo.
+
+create_table "foo" do |t|
+  t.integer "CustomerID"
+  t.string  "Name"
+  t.string  "Description"
+  t.string  "Type"
+end
+
+Then, the model comes along.
+
+class Foo < ActiveRecord::Base
+end
+
+After some googling you find this plugin, and put it in your RAILS application that uses ACTIVERECORD
+under vender/plugins.
+
+So far so good, right? Good... Let's get this bad boy active and running now.
+Let us open that model we created and view some examples.
+
+Simple Example
+--------------
+
+class Foo < ActiveRecord::Base
+  fixer_upper
+end
+
+Q: What does this do?
+A: Gives you access to new model methods that more closely resemble ruby naming conventions.
+   >>foo = Foo.create(:CustomerID => 1, :Name => "Joshbob Tommy", :Description => "this is a description", :type => "this is a type")
+   >>foo.customer_id         #return 1
+   >>foo.name                #return "Joshbob Tommy"
+   >>foo.name="Tommy McBob"  #sets foo.Name to "Tommy McBob"
+   >>foo.Name                #return "Tommy McBob" original methods are still kept (notice the uppercase on the method 'Name')
+   >>foo.Name                #return "Tommy McBob" but now we also have our ruby friendly methods too
+   >>foo.save                #foo will now be updated with any new values you added using the fixed_up methods
+
+Q: Wow, that's it?
+A: Yes. Yes it is.
+
+Extreme Example
+---------------
+
+class Foo < ActiveRecord::Base
+  fixer_upper(:exclude => ["CustomerID"], :exclude_gets => ["Description"], :exclude_sets => ["Name"])
+end
+
+Q: That's a lot of fancy stuff, but what does it all mean?
+A: Let me show you friend.
+   >>foo = Foo.create(:CustomerID => 1, :Name => "Joshbob Tommy", :Description => "this is a description", :type => "this is a type")
+   >>foo.CustomerID          #return 1
+   >>foo.customer_id         #method not found, becuase you are excluding CustomerID from fixer_upper
+   >>foo.customer_id=1       #method not found, becuase you are excluding CustomerID from fixer_upper
+   >>foo.Description         #return "this is a description"
+   >>foo.description         #method not found, becuase you are excluding description from fixer_upper getter list
+   >>foo.description="test"  #sets foo.Description to "test" because you only excluded the getter, not the setter
+   >>foo.Name                #return "Tommy McBob"
+   >>foo.name                #return "Tommy McBob" because you excluded the setter, not the getter
+   >>foo.name="Tommy McBob"  #method not found, becuase you are excluding name from fixer_upper setter list
+
+Q: SAY WHAAAAAA?
+A: Relax. I'll explain.
+   Fixer_upper by default fixes all of your properties. But say you don't want some properties fixed, well
+   fixer_upper can support that too. You can do this in three ways using a simple options hash.
+   :exclude => ["CustomerID", "Name"] #Means you can't use 'foo.customer_id' or 'foo.name'.
+                                      #But fear not, you can still use the original methods
+   :exclude_gets => ["Name"] #Means you CAN'T use 'foo.name', but you can still use foo.name="value".
+                             #In other words, you'll have the setter, but not the getter.
+   :exclude_sets => ["Name"] #Means you CAN use 'foo.name', but you can still use foo.name.
+                             #In other words, you'll have the getter, but not the setter.
+
+General FAQs
+============
+
+Q: What do I need to run this?
+A: Ruby, Rails, and ActiveRecord. If you are looking for this plugin, odds are you know how to set this up already.
+   Follow the example above for a quick rundown.
+
+Q: Why have the ability to exlude only getters or setters?
+A: Good question. Because you can. Odds are you won't, so if it confuses you then don't worry. It confuses me half the time too.
+
+Q: What happens if half of my coloumns are named correctly, but the other half aren't?
+A: It will only fix_up methods that need to be fixed. It ignores everything else.
+
+Q: I noticed that your Foo.create still use the original properties? What's up with that?
+A: Yeah, I'm working on that one still... It's open source, so if you know how to fix this feel free to fork this.
+
+License
+=======
+
+Copyright (c) 2010 Fluid Media, authored by Danny Frade, released under the MIT license
